@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.fondo{
+  background-image: url("/fondo2.jpg");
+  
+}
+.color_texto{
+  color:#086b1d;
+  padding-bottom: 10px;
+}
