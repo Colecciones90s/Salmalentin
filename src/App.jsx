@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import JSConfetti from "js-confetti";
-import { Play, Pause, SkipBack, SkipForward } from "lucide-react";
-
+import { Play, Pause, SkipBack, SkipForward, Music } from "lucide-react";
 function App() {
   const jsConfetti = new JSConfetti();
   const [randomValor, setRandomValor] = useState({});
@@ -10,9 +9,11 @@ function App() {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(new Audio());
+  const [showControls, setShowControls] = useState(false);
+  const [musicaIniciada, setMusicaIniciada] = useState(false);
 
-  // Lista de canciones en la carpeta "public/music/"
   const musicFiles = [
+    { name: "Sólo Importas Tú", file: "song0.webm" },
     { name: "Anhelo", file: "song1.webm" },
     { name: "Colgando en Tus Manos", file: "song2.webm" },
     { name: "Me Muero", file: "song3.webm" },
@@ -51,6 +52,13 @@ function App() {
     setCurrentSongIndex((prevIndex) => (prevIndex - 1 + musicFiles.length) % musicFiles.length);
   };
 
+  const reproducirMusica = () => {
+    if (!musicaIniciada) {  // Solo si no ha comenzado antes
+      audioRef.current.play();
+      setMusicaIniciada(true);  // Marcar como iniciada para no repetir
+    }
+  };
+
   const randomResponses = [
     { id: 1, description: "Di si por favor", img: "https://i.pinimg.com/originals/db/aa/c1/dbaac13f6278b91a15e480752b8a7242.gif" },
     { id: 2, description: "Piénsalo de nuevo.", img: "https://i.pinimg.com/originals/77/6b/21/776b215bed3deeef47fd3aa657685a18.gif" },
@@ -77,13 +85,33 @@ function App() {
   return (
     <main id="canvas" className="fondo w-screen h-screen bg-no-repeat bg-cover flex items-center justify-center bg-center ">
       {/* Reproductor de Música */}
-      <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-800 p-3 rounded-lg flex items-center space-x-4">
-        <button onClick={prevSong} className="text-white"><SkipBack size={24} /></button>
-        <button onClick={togglePlayPause} className="text-white">
-          {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-        </button>
-        <button onClick={nextSong} className="text-white"><SkipForward size={24} /></button>
-        <span className="text-white font-semibold">{musicFiles[currentSongIndex].name}</span>
+      <div className="fixed bottom-5 right-5">
+        {!showControls ? (
+          // Botón circular cuando los controles están ocultos
+          <button
+            onClick={() => setShowControls(true)}
+            className="w-14 h-14 flex items-center justify-center bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-700 transition"
+          >
+            <Music size={30} />
+          </button>
+        ) : (
+          // Controles Multimedia
+          <div className="bg-gray-800 p-3 rounded-lg flex items-center space-x-4 shadow-lg transition-all">
+            <button onClick={prevSong} className="text-white"><SkipBack size={24} /></button>
+            <button onClick={togglePlayPause} className="text-white">
+              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+            </button>
+            <button onClick={nextSong} className="text-white"><SkipForward size={24} /></button>
+            <span className="text-white font-semibold">{musicFiles[currentSongIndex].name}</span>
+            {/* Botón para cerrar los controles */}
+            <button
+              onClick={() => setShowControls(false)}
+              className="text-gray-400 hover:text-white transition"
+            >
+              ✖
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Pregunta principal */}
@@ -101,6 +129,7 @@ function App() {
             <button 
               onClick={() => {
                 setValueSi(true);
+                reproducirMusica();
                 jsConfetti.addConfetti({ emojis: ['😍', '🥰', '❤️', '😘','🌻'], emojiSize: 70, confettiNumber: 80 });
               }} 
               className={`bg-green-500 text-white font-bold p-2 rounded-md text-xl h-${agrandar}`}
@@ -110,7 +139,10 @@ function App() {
             </button>
             <button 
               className="bg-red-500 text-white font-bold p-2 rounded-md text-xl"
-              onClick={randomResponse}
+              onClick={() => {
+                randomResponse(); 
+                reproducirMusica();
+              }}
             >
               {randomValor.description || "No"}
             </button>
