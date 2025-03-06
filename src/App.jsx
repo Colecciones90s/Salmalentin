@@ -1,7 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import JSConfetti from "js-confetti";
 import { Play, Pause, SkipBack, SkipForward, Music } from "lucide-react";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
+import Swal from "sweetalert2"; 
+
 function App() {
+  const [claveIngresada, setClaveIngresada] = useState("");
+  const [autenticado, setAutenticado] = useState(false);
+  const [mostrarClave, setMostrarClave] = useState(false);
+  const CLAVE_CORRECTA = "salmateto12";
+
   const jsConfetti = new JSConfetti();
   const [randomValor, setRandomValor] = useState({});
   const [agrandar, setAgrandar] = useState(45);
@@ -53,9 +61,9 @@ function App() {
   };
 
   const reproducirMusica = () => {
-    if (!musicaIniciada) {  // Solo si no ha comenzado antes
+    if (!musicaIniciada) {
       audioRef.current.play();
-      setMusicaIniciada(true);  // Marcar como iniciada para no repetir
+      setMusicaIniciada(true);
     }
   };
 
@@ -69,10 +77,10 @@ function App() {
     { id: 7, description: "Te prometo que será inolvidable.", img: "https://media.tenor.com/N2oqtqaB_G0AAAAi/peach-goma.gif" },
     { id: 8, description: "No dejes que el miedo te detenga.", img: "https://i.pinimg.com/originals/db/aa/c1/dbaac13f6278b91a15e480752b8a7242.gif" },
     { id: 9, description: "Confía en el destino, nos está dando una señal.", img: "https://media.tenor.com/cbEccaK9QxMAAAAi/peach-goma.gif" },
-    { id: 10, description: "Confía en mí.", img: "https://i.pinimg.com/originals/db/aa/c1/dbaac13f6278b91a15e480752b8a7242.gif" },
+    { id: 10, description: "Confía en mí, será genial.", img: "https://i.pinimg.com/originals/db/aa/c1/dbaac13f6278b91a15e480752b8a7242.gif" },
     { id: 11, description: "Confía en mí.", img: "https://i.gifer.com/Z23a.gif" },
     { id: 12, description: "Confía en mí.", img: "https://www.gifcen.com/wp-content/uploads/2021/07/-62.gif" },
-    { id: 13, description: "Confía en mí.", img: "https://i.redd.it/8qts3ul2dcwd1.gif" },
+    { id: 13, description: "Confía en mí, será genial.", img: "https://i.redd.it/8qts3ul2dcwd1.gif" },
     { id: 14, description: "Confía en mí.", img: "https://i.pinimg.com/originals/f4/70/eb/f470eb7af4598b96a9adccb65d109aed.gif" }
   ];
 
@@ -82,12 +90,71 @@ function App() {
     setRandomValor(randomResponses[index]);
   };
 
+  const verificarClave = () => {
+    if (claveIngresada.toLowerCase() === CLAVE_CORRECTA) {
+      Swal.fire({
+        title: "Oli hermosa 🌻🌻",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
+      });
+      setAutenticado(true);
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Clave incorrecta poto",
+        text: "Intenta de nuevo 🍐🍐.",
+        confirmButtonColor: "#3085d6",
+      });
+      setClaveIngresada("");
+    }
+  };
+  
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); 
+      verificarClave();
+    }
+  };
+  
+  if (!autenticado) {
+    return (
+      <div className="w-screen h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
+        <h1 className="text-3xl font-bold mb-4">Ingresa la palabra mágica</h1>
+        <div className="relative">
+          <input
+            type={mostrarClave ? "text" : "password"}
+            value={claveIngresada}
+            onChange={(e) => setClaveIngresada(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="p-2 pr-10 rounded text-black"
+            placeholder="Clave..."
+          />
+          <button
+            type="button"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600"
+            onClick={() => setMostrarClave(!mostrarClave)}
+          >
+            {mostrarClave ? (
+              <EyeSlashIcon className="h-6 w-6" />
+            ) : (
+              <EyeIcon className="h-6 w-6" />
+            )}
+          </button>
+        </div>
+        <button
+          onClick={verificarClave}
+          className="mt-4 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Acceder
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <main id="canvas" className="fondo w-screen h-screen bg-no-repeat bg-cover flex items-center justify-center bg-center ">
-      {/* Reproductor de Música */}
+    <main className="fondo w-screen h-screen bg-no-repeat bg-cover flex items-center justify-center bg-center">
       <div className="fixed bottom-5 right-5">
         {!showControls ? (
-          // Botón circular cuando los controles están ocultos
           <button
             onClick={() => setShowControls(true)}
             className="w-14 h-14 flex items-center justify-center bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-700 transition"
@@ -95,7 +162,6 @@ function App() {
             <Music size={30} />
           </button>
         ) : (
-          // Controles Multimedia
           <div className="bg-gray-800 p-3 rounded-lg flex items-center space-x-4 shadow-lg transition-all">
             <button onClick={prevSong} className="text-white"><SkipBack size={24} /></button>
             <button onClick={togglePlayPause} className="text-white">
@@ -103,7 +169,6 @@ function App() {
             </button>
             <button onClick={nextSong} className="text-white"><SkipForward size={24} /></button>
             <span className="text-white font-semibold">{musicFiles[currentSongIndex].name}</span>
-            {/* Botón para cerrar los controles */}
             <button
               onClick={() => setShowControls(false)}
               className="text-gray-400 hover:text-white transition"
@@ -114,7 +179,6 @@ function App() {
         )}
       </div>
 
-      {/* Pregunta principal */}
       {!valueSi ? (
         <div className="p-5">
           <h1 className="text-white font-bold text-5xl text-center color_texto">¿Quieres ser mi Salmalentin?</h1>
@@ -132,10 +196,10 @@ function App() {
                 reproducirMusica();
                 jsConfetti.addConfetti({ emojis: ['😍', '🥰', '❤️', '😘','🌻'], emojiSize: 70, confettiNumber: 80 });
               }} 
-              className={`bg-green-500 text-white font-bold p-2 rounded-md text-xl h-${agrandar}`}
+              className="bg-green-500 text-white font-bold p-2 rounded-md text-xl"
               style={{ height: agrandar }}
             >
-              Si
+              Sí
             </button>
             <button 
               className="bg-red-500 text-white font-bold p-2 rounded-md text-xl"
